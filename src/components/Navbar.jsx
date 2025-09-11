@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaBars, FaTimes, FaSearch } from "react-icons/fa";
@@ -6,40 +6,61 @@ import { FaBars, FaTimes, FaSearch } from "react-icons/fa";
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(null); // track which menu is open
+  const [dropdownOpen, setDropdownOpen] = useState(null);
+  const [showNavbar, setShowNavbar] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const location = useLocation();
+
+  // Lock background scroll when menu is open
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "auto";
+    return () => (document.body.style.overflow = "auto");
+  }, [isOpen]);
+
+  // Show/hide navbar on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > lastScrollY) {
+        setShowNavbar(false); // scrolling down → hide
+      } else {
+        setShowNavbar(true); // scrolling up → show
+      }
+      setLastScrollY(window.scrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   // Top strip links
   const topLinks = [
-    "AICTE Approvals",
-    "UGC 2(f) & ISO Certificate",
-    "UGC Mandatory Committee",
-    "IQAC",
-    "NAAC",
-    "NIRF",
-    "Gallery",
-    "Events",
+    { name: "AICTE Approvals", path: "" },
+    { name: "UGC 2(f) & ISO Certificate", path: "" },
+    { name: "UGC Mandatory Committee", path: "" },
+    { name: "IQAC", path: "" },
+    { name: "NAAC", path: "" },
+    { name: "NIRF", path: "" },
+    { name: "Gallery", path: "/gallery" },
+    { name: "Events", path: "" },
   ];
 
-  // Main menu links
+  // Main nav links
   const navLinks = [
     { name: "HOME", path: "/" },
     {
       name: "ABOUT US",
-      path: "/about",
+      path: "",
       submenu: [
         { name: "Differentiators Aimsr", path: "/about/differentiators-aimsr" },
         { name: "Vision & Mission", path: "/about/vision-mission" },
         { name: "Sponsoring Body", path: "/about/sponsoring-body" },
         { name: "Best Practices", path: "/about/best-practices" },
-        { name: "Governing Body", path: "/about/governing-body" },
-        { name: "Accreditations", path: "/about/accreditations" },
         { name: "Media Speaks", path: "/about/media-speaks" },
       ],
     },
     {
       name: "ACADEMICS",
-      path: "/academics",
+      path: "",
       submenu: [
         { name: "Bachelor of Management Studies (BMS)", path: "/academics/bachelor-of-management-studies-bms" },
         { name: "Master of Management Studies (MMS)", path: "/academics/master-of-management-studies-mms" },
@@ -51,36 +72,34 @@ const Navbar = () => {
       ],
     },
     { 
-      name: "PLACEMENT", path: "/placements",
+      name: "PLACEMENT", path: "",
       submenu: [
         { name: "Corporate Partners", path: "/placements/corporate-partners" },
         { name: "Highlights", path: "/placements/highlights" },
         { name: "Industry Speaks", path: "/placements/industry-speaks" },
         { name: "Alumni Testimonials", path: "/placements/alumni-testimonials" },
       ],
-
     },
     { 
-      name: "RESEARCH", path: "/research",
+      name: "RESEARCH", path: "",
       submenu: [
         { name: "Entrepreneurship Cell", path: "/research/entrepreneurship-cell" },
       ],
-
-     },
+    },
     { 
-      name: "STUDENTS ZONE", path: "/students",
+      name: "STUDENTS ZONE", path: "",
       submenu: [
         { name: "Achievements", path: "/students-zone/achievements" },
       ],
     },
     { 
-      name: "FACILITIES", path: "/facilities",
+      name: "FACILITIES", path: "",
       submenu: [
         { name: "Infrastructure", path: "/facilities/infrastructure" },
       ], 
     },
     { 
-      name: "QUICK LINKS", path: "/quick-links",
+      name: "QUICK LINKS", path: "",
       submenu: [
         { name: "Notice", path: "/notices" },
         { name: "Circulars", path: "/circulars" },
@@ -93,39 +112,44 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full">
-      {/* Top Yellow Strip */}
-      <div className="bg-yellow-400 text-black text-xs md:text-sm flex flex-wrap justify-between items-center px-4 md:px-6 py-1 md:py-2">
-        <div className="flex flex-wrap space-x-1 md:space-x-4">
+    <nav className="w-full">
+      {/* TopNav (yellow) - Desktop only */}
+      <div className="hidden md:flex bg-yellow-400 text-black text-xs py-1 px-4 justify-between border-b">
+        <div className="flex space-x-4">
           {topLinks.map((link, i) => (
-            <span
+            <Link
               key={i}
-              className="cursor-pointer hover:underline whitespace-nowrap after:content-['|'] last:after:content-none px-1"
+              to={link.path}
+              className="hover:underline whitespace-nowrap"
             >
-              {link}
-            </span>
+              {link.name}
+            </Link>
           ))}
         </div>
-        <select className="border rounded px-1 md:px-2 py-0 md:py-1 text-xs md:text-sm bg-transparent">
+        <select className="border rounded px-2 py-0.5 text-xs bg-white">
           <option>English</option>
           <option>Hindi</option>
         </select>
       </div>
 
-      {/* Main Navbar */}
-      <div className="bg-white shadow-md">
-        <div className="max-w-7xl mx-auto px-4 flex justify-between items-center h-20">
+      {/* MainNav (white) */}
+      <motion.div
+        animate={{ y: showNavbar ? 0 : -100 }}
+        transition={{ duration: 0.3 }}
+        className="bg-white shadow-md sticky top-0 z-50"
+      >
+        <div className="max-w-7xl mx-auto flex justify-between items-center h-16 px-4">
           {/* Logo */}
-          <Link to="/" className="hidden md:flex items-center">
+          <Link to="/" className="flex items-center">
             <img
               src="/images/AIMSR-Logo.png"
               alt="AIMSR Logo"
-              className="h-16"
+              className="h-12"
             />
           </Link>
 
           {/* Desktop Links */}
-          <div className="hidden md:flex space-x-4 lg:space-x-6 relative">
+          <div className="hidden md:flex space-x-6 relative">
             {navLinks.map((link) =>
               link.submenu ? (
                 <div
@@ -136,7 +160,7 @@ const Navbar = () => {
                 >
                   <Link
                     to={link.path}
-                    className={`text-blue-700 hover:text-blue-900 transition-colors duration-300 font-semibold text-sm ${
+                    className={`text-blue-700 hover:text-blue-900 transition-colors font-semibold text-sm ${
                       location.pathname === link.path
                         ? "text-blue-900 border-b-2 border-blue-600"
                         : ""
@@ -144,10 +168,8 @@ const Navbar = () => {
                   >
                     {link.name}
                   </Link>
-
-                  {/* Dropdown */}
                   {dropdownOpen === link.name && (
-                    <div className="absolute left-0 top-full mt-0 bg-white shadow-lg rounded-md w-56">
+                    <div className="absolute left-0 top-full bg-white shadow-lg rounded-md w-56">
                       {link.submenu.map((sublink) => (
                         <Link
                           key={sublink.name}
@@ -164,7 +186,7 @@ const Navbar = () => {
                 <Link
                   key={link.name}
                   to={link.path}
-                  className={`text-blue-700 hover:text-blue-900 transition-colors duration-300 font-semibold text-sm ${
+                  className={`text-blue-700 hover:text-blue-900 transition-colors font-semibold text-sm ${
                     location.pathname === link.path
                       ? "text-blue-900 border-b-2 border-blue-600"
                       : ""
@@ -176,7 +198,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Search box */}
+          {/* Search (desktop only) */}
           <div className="hidden md:flex items-center relative">
             {searchOpen ? (
               <motion.div
@@ -206,7 +228,7 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Hamburger (mobile) */}
           <button
             className="md:hidden text-blue-700"
             onClick={() => setIsOpen(!isOpen)}
@@ -214,55 +236,98 @@ const Navbar = () => {
             {isOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
           </button>
         </div>
+      </motion.div>
 
-        {/* Mobile Menu */}
-        {isOpen && (
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50">
+          <div
+            className="absolute inset-0 bg-black bg-opacity-40"
+            onClick={() => setIsOpen(false)}
+          ></div>
+
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="md:hidden bg-white shadow-lg px-4 py-3"
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "tween", duration: 0.3 }}
+            className="absolute right-0 top-0 h-full w-3/4 sm:w-2/3 bg-white shadow-lg overflow-y-auto px-4 py-6"
           >
-            {navLinks.map((link) => (
-              <div key={link.name}>
+            <button
+              className="text-blue-700 absolute top-4 right-4"
+              onClick={() => setIsOpen(false)}
+            >
+              <FaTimes size={24} />
+            </button>
+
+            <div className="mt-10">
+              {/* Quick Links (from TopNav) */}
+              <h3 className="text-gray-500 uppercase text-xs font-bold mb-2">Quick Links</h3>
+              {topLinks.map((link, i) => (
                 <Link
+                  key={i}
                   to={link.path}
-                  className={`block py-2 text-blue-700 hover:text-blue-900 transition-colors duration-300 font-semibold ${
-                    location.pathname === link.path ? "text-blue-900" : ""
-                  }`}
+                  className="block py-2 text-blue-700 hover:text-blue-900 text-sm"
                   onClick={() => setIsOpen(false)}
                 >
                   {link.name}
                 </Link>
-                {link.submenu && (
-                  <div className="pl-4">
-                    {link.submenu.map((sublink) => (
-                      <Link
-                        key={sublink.name}
-                        to={sublink.path}
-                        className="block py-1 text-sm text-blue-600 hover:text-blue-800"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        {sublink.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+              ))}
+
+              <hr className="my-4" />
+
+              {/* Main Menu */}
+              {navLinks.map((link) => (
+                <div key={link.name} className="mb-2">
+                  <Link
+                    to={link.path}
+                    className={`block py-2 text-blue-700 hover:text-blue-900 font-semibold ${
+                      location.pathname === link.path ? "text-blue-900" : ""
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                  {link.submenu && (
+                    <div className="pl-4">
+                      {link.submenu.map((sublink) => (
+                        <Link
+                          key={sublink.name}
+                          to={sublink.path}
+                          className="block py-1 text-sm text-blue-600 hover:text-blue-800"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          {sublink.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Search (mobile) */}
+              <div className="flex items-center mt-4">
+                <input
+                  type="text"
+                  placeholder="Search..."
+                  className="w-full border rounded-lg px-3 py-2"
+                />
+                <button className="ml-2 text-blue-700">
+                  <FaSearch size={20} />
+                </button>
               </div>
-            ))}
-            <div className="flex items-center mt-3">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="w-full border rounded-lg px-3 py-2"
-              />
-              <button className="ml-2 text-blue-700">
-                <FaSearch size={20} />
-              </button>
+
+              {/* Language selector */}
+              <div className="mt-4">
+                <select className="w-full border rounded px-2 py-2 text-sm bg-white">
+                  <option>English</option>
+                  <option>Hindi</option>
+                </select>
+              </div>
             </div>
           </motion.div>
-        )}
-      </div>
+        </div>
+      )}
     </nav>
   );
 };

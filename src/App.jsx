@@ -10,6 +10,7 @@ import AdministrationPage from './pages/AdministrationPage';
 import CareersPage from './pages/CareersPage';
 import MandatoryDisclosurePage from './pages/MandatoryDisclosurePage';
 import ContactPage from './pages/ContactPage';
+
 // sub pages of about
 import DifferentiatorsPage from './pages/About-Pages/DifferentiatorsPage';
 import VisionMissionPage from './pages/About-Pages/VisionMissionPage';
@@ -25,6 +26,7 @@ import PhDManagement from './pages/Academics/PhDManagement';
 import FeesStructure from './pages/Academics/FeesStructure';
 import AdmissionProcess from './pages/Academics/AdmissionProcess';
 import AdmissionAdvertisements from './pages/Academics/AdmissionAdvertisements';
+
 // Sub pages of Placement
 import CorporatePartners from './pages/Placement/CorporatePartners';
 import Highlights from './pages/Placement/Highlights';
@@ -48,9 +50,28 @@ import DressCode from './pages/QuickLinks/DressCode';
 import OnlineFeePayment from './pages/QuickLinks/OnlineFeePayment';
 import MandatoryDisclosure from './pages/QuickLinks/MandatoryDisclosure';
 
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+
+// 🔹 ScrollToTop Component
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant', // or "smooth"
+    });
+  }, [pathname]);
+
+  return null;
+};
+
 const App = () => {
   return (
     <Router>
+      <ScrollToTop /> {/* 👈 Ensures scroll resets on route change */}
       <div className="App">
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -79,7 +100,7 @@ const App = () => {
           <Route path="/placements/highlights" element={<Highlights />} />
           <Route path="/placements/industry-speaks" element={<IndustrySpeaks />} />
           <Route path="/placements/alumni-testimonials" element={<AlumniTestimonials />} />
-          
+
           {/* Route of Research */}
           <Route path="/research/entrepreneurship-cell" element={<ECell />} />
 
@@ -96,7 +117,7 @@ const App = () => {
           <Route path="/dress-code" element={<DressCode />} />
           <Route path="/online-fee-payment" element={<OnlineFeePayment />} />
           <Route path="/mandatory-disclosure" element={<MandatoryDisclosure />} />
-          
+
           <Route path="/gallery" element={<GalleryPage />} />
           <Route path="/library" element={<LibraryPage />} />
           <Route path="/administration" element={<AdministrationPage />} />
@@ -107,6 +128,6 @@ const App = () => {
       </div>
     </Router>
   );
-}
+};
 
 export default App;
